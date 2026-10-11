@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MechMemory | Live Machine Monitoring</title>
+<style>
+:root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#283851;--text:#e8eef8;--muted:#9aaac2;--cyan:#60d5ef;--green:#48d597;--red:#ff6b79;--amber:#f5bd55}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Segoe UI,Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;border-bottom:1px solid var(--line);background:#0e1727;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:12px;background:#173c51;color:var(--cyan);display:grid;place-items:center;font-size:23px}.brand h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:12px;letter-spacing:.12em}.pill{border:1px solid #31506a;border-radius:99px;padding:7px 12px;color:var(--cyan);font-size:12px}
+main{max-width:1400px;margin:auto;padding:22px;display:grid;gap:18px}.welcome{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:end}.welcome h2{margin:0 0 4px;font-size:25px}.muted{color:var(--muted)}.small{font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0}.label{font-size:13px;color:var(--muted)}.metric{font-size:30px;font-weight:700;margin:7px 0}.metric small{font-size:14px;color:var(--muted);font-weight:500}.note{font-size:12px;color:var(--muted)}.status{color:var(--green)}.status.bad{color:var(--red)}.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.8fr);gap:18px}.head{display:flex;justify-content:space-between;align-items:start;gap:10px;margin-bottom:13px}.head h3,.panel h3{margin:0 0 3px;font-size:17px}.btn{display:inline-block;border:1px solid #36516e;background:#1a2a42;color:var(--text);padding:9px 12px;border-radius:9px;text-decoration:none;cursor:pointer;font-weight:600}.btn.primary{background:#14516a;border-color:#23738e}.frame{width:100%;height:510px;border:1px solid #31435b;border-radius:12px;background:#202a38}.notice{padding:11px 12px;border-radius:10px;background:#18283b;color:#b7c8dd;font-size:12px;margin-top:12px}.tag{display:inline-block;border-radius:7px;padding:4px 8px;font-size:11px;background:#193d32;color:#80e6b5}.tag.bad{background:#48242e;color:#ff9aa4}.chart{width:100%;height:185px;background:#0d1726;border-radius:10px;border:1px solid var(--line)}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted)}.form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}.form input,.form select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px solid #354862;background:#0d1726;color:var(--text)}.form button{grid-column:1/-1}.footer{text-align:center;color:var(--muted);font-size:12px;padding:6px}
+@media(max-width:950px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.frame{height:470px}.form{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){main{padding:12px}.cards{grid-template-columns:1fr 1fr}.metric{font-size:23px}.frame{height:420px}.form{grid-template-columns:1fr}header{padding:15px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">⚙</div><div><h1>MechMemory</h1><div class="sub">MACHINE INTELLIGENCE & MAINTENANCE</div></div></div><div class="pill" id="connection">● WAITING FOR ESP32</div></header>
+<main>
+<section class="welcome"><div><h2>Live Machine Monitoring</h2><div class="muted">ESP32 readings, anomaly detection and maintenance memory.</div></div><div class="small muted">Alert rules: temperature &gt; 70°C OR vibration &gt; 7.0/10</div></section>
+<section class="cards">
+<div class="card"><div class="label">Machine temperature</div><div class="metric"><span id="temp">--</span><small> °C</small></div><div class="note">Latest ESP32 reading</div></div>
+<div class="card"><div class="label">Vibration level</div><div class="metric"><span id="vib">--</span><small> / 10</small></div><div class="note">Latest ESP32 reading</div></div>
+<div class="card"><div class="label">Current condition</div><div class="metric"><span id="status" class="status">WAITING</span></div><div class="note" id="statusNote">No readings received yet</div></div>
+<div class="card"><div class="label">Readings received</div><div class="metric" id="count">0</div><div class="note">Stored by local Flask API</div></div>
+</section>
+<section class="layout">
+<div class="panel"><div class="head"><div><h3>Embedded Wokwi hardware</h3><div class="muted small">Adjust the potentiometers in the simulator</div></div><a class="btn" href="https://wokwi.com/projects/477576199813596161" target="_blank" rel="noopener">Open Wokwi ↗</a></div>
+<iframe class="frame" title="Wokwi ESP32 simulation" src="https://wokwi.com/projects/477576199813596161?embed=1" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+<div class="notice">The readings above update from the API when the ESP32 posts data. If this badge remains “WAITING FOR ESP32”, check the Wokwi endpoint URL and the terminal running Flask.</div></div>
+<div class="panel"><div class="head"><div><h3>Latest readings</h3><div class="muted small">Refreshes automatically every 2 seconds</div></div><span class="tag" id="tag">WAITING</span></div>
+<canvas id="chart" class="chart" width="600" height="185"></canvas><div class="note" style="margin-top:8px">Cyan: temperature · Amber: vibration × 10</div>
+<div style="margin-top:20px"><h3>Latest event</h3><p id="event" class="muted">Waiting for the first ESP32 message…</p><p class="note" id="lastSeen">Last received: never</p></div></div>
+</section>
+<section class="panel"><div class="head"><div><h3>Sensor reading history</h3><div class="muted small">Most recent readings received by the backend</div></div><button class="btn" id="refresh">Refresh now</button></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Machine</th><th>Temperature</th><th>Vibration</th><th>Status</th></tr></thead><tbody id="readingRows"><tr><td colspan="5" class="muted">No readings received yet.</td></tr></tbody></table></div></section>
+<section class="panel"><h3>Maintenance history</h3><div class="muted small">Add repair information to the local database.</div><form id="maintenanceForm" class="form"><input id="machine" value="MCH-001" placeholder="Machine ID" required><input id="symptom" placeholder="Symptom / failure" required><input id="action" placeholder="Repair action" required><select id="outcome"><option>Resolved</option><option>Monitoring</option><option>Pending</option></select><button class="btn primary" type="submit">Save maintenance record</button></form><div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Time</th><th>Machine</th><th>Symptom</th><th>Repair action</th><th>Outcome</th></tr></thead><tbody id="maintenanceRows"><tr><td colspan="5" class="muted">No maintenance records saved yet.</td></tr></tbody></table></div></section>
+<div class="footer">MechMemory student prototype · Live data requires the Flask server and a reachable Wokwi API endpoint.</div>
+</main>
+<script>
+let chartData=[];
+const $=id=>document.getElementById(id);
+function safeText(v){return String(v??'')}
+function addCell(row,value){const td=document.createElement('td');td.textContent=safeText(value);row.appendChild(td)}
+async function refreshData(){
+ try{
+  const [latestRes,allRes,maintRes]=await Promise.all([fetch('/api/latest'),fetch('/api/readings'),fetch('/api/maintenance')]);
+  if(!latestRes.ok||!allRes.ok||!maintRes.ok)throw new Error('API unavailable');
+  const latest=await latestRes.json(),all=await allRes.json(),maint=await maintRes.json();
+  $('connection').textContent='● API CONNECTED';$('connection').style.color='#48d597';
+  $('count').textContent=all.length;
+  if(latest.available){
+   $('temp').textContent=Number(latest.temperature).toFixed(1);$('vib').textContent=Number(latest.vibration).toFixed(2);
+   const bad=latest.status==='ANOMALY';$('status').textContent=latest.status;$('status').className='status'+(bad?' bad':'');
+   $('statusNote').textContent=bad?'Threshold exceeded — investigate':'Within configured thresholds';
+   $('tag').textContent=latest.status;$('tag').className='tag'+(bad?' bad':'');
+   $('event').textContent=`${latest.machine_id}: ${Number(latest.temperature).toFixed(1)}°C, vibration ${Number(latest.vibration).toFixed(2)} — ${latest.status}`;
+   $('lastSeen').textContent='Last received: '+new Date(latest.created_at).toLocaleString();
+  }
+  $('readingRows').innerHTML='';
+  if(!all.length){$('readingRows').innerHTML='<tr><td colspan="5" class="muted">No readings received yet.</td></tr>'}
+  all.slice(0,20).forEach(r=>{const tr=document.createElement('tr');addCell(tr,new Date(r.created_at).toLocaleTimeString());addCell(tr,r.machine_id);addCell(tr,Number(r.temperature).toFixed(1)+' °C');addCell(tr,Number(r.vibration).toFixed(2));addCell(tr,r.status);$('readingRows').appendChild(tr)});
+  $('maintenanceRows').innerHTML='';
+  if(!maint.length){$('maintenanceRows').innerHTML='<tr><td colspan="5" class="muted">No maintenance records saved yet.</td></tr>'}
+  maint.forEach(r=>{const tr=document.createElement('tr');addCell(tr,new Date(r.created_at).toLocaleString());addCell(tr,r.machine_id);addCell(tr,r.symptom);addCell(tr,r.action);addCell(tr,r.outcome);$('maintenanceRows').appendChild(tr)});
+  chartData=all.slice(0,20).reverse();drawChart();
+ }catch(e){$('connection').textContent='● API NOT CONNECTED';$('connection').style.color='#ff6b79'}
+}
+function drawChart(){
+ const c=$('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height,p=30;ctx.clearRect(0,0,w,h);ctx.font='12px Segoe UI';ctx.fillStyle='#9aaac2';ctx.strokeStyle='#283851';
+ for(let i=0;i<=4;i++){let y=p+(h-2*p)*i/4;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(w-8,y);ctx.stroke();ctx.fillText(String(100-i*25),2,y+4)}
+ const a=chartData;if(!a.length)return;const x=i=>p+(w-p-18)*(a.length===1?0:i/(a.length-1)),y=v=>p+(h-2*p)*(100-v)/100;
+ ctx.strokeStyle='#60d5ef';ctx.lineWidth=2;ctx.beginPath();a.forEach((r,i)=>i?ctx.lineTo(x(i),y(Number(r.temperature))):ctx.moveTo(x(i),y(Number(r.temperature))));ctx.stroke();
+ ctx.strokeStyle='#f5bd55';ctx.beginPath();a.forEach((r,i)=>i?ctx.lineTo(x(i),y(Number(r.vibration)*10)):ctx.moveTo(x(i),y(Number(r.vibration)*10)));ctx.stroke();
+}
+$('refresh').addEventListener('click',refreshData);
+$('maintenanceForm').addEventListener('submit',async e=>{e.preventDefault();const data={machine_id:$('machine').value,symptom:$('symptom').value,action:$('action').value,outcome:$('outcome').value};try{const r=await fetch('/api/maintenance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw new Error();$('symptom').value='';$('action').value='';await refreshData()}catch(e){alert('Could not save. Is the Flask server running?')}});
+refreshData();setInterval(refreshData,2000);
+</script>
+</body></html>
